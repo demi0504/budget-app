@@ -11,12 +11,7 @@ const DATA_CACHE_NAME = 'data-cache-v1';
 
 // Call install event
 self.addEventListener("install", (e) => {
-    // pre cache image data
-    console.log('Service Worker: Installed');
-    evt.waitUntil(
-      caches.open(DATA_CACHE_NAME).then((cache) => cache.add("/api/images"))
-      );
-      
+    console.log('Service Worker: Installed');   
     // pre cache all static assets
     evt.waitUntil(
       caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
