@@ -1,3 +1,5 @@
+const CACHE_NAME = 'static-cache-v2';
+
 const FILES_TO_CACHE = [
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
@@ -6,25 +8,26 @@ const FILES_TO_CACHE = [
     '/manifest.webmanifest',
     '/database.js'
 ]
-const CACHE_NAME = 'static-cache-v2';
+
 const DATA_CACHE_NAME = 'data-cache-v1';
 
 // Call install event
-self.addEventListener("install", (e) => {
-    console.log('Service Worker: Installed');   
-    // pre cache all static assets
-    evt.waitUntil(
-      caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
-    );
-  
-    // tell the browser to activate this service worker immediately once it
-    // has finished installing
-    self.skipWaiting();
+self.addEventListener("install", evt => {
+  console.log('Service Worker: Installed');   
+  // pre cache all static assets
+  evt.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('Service Worker: Caching Files');
+      cache.addAll(FILES_TO_CACHE);
+    })
+    .then(() => self.skipWaiting())
+  );   
 });
 
 // Call Activate Event
-self.addEventListener("activate", function(evt) {
+self.addEventListener("activate", evt => {
   console.log('Service Worker: Activated');
+  // Remove unwanted caches
   evt.waitUntil(
     caches.keys().then(keyList => {
       return Promise.all(
@@ -40,14 +43,12 @@ self.addEventListener("activate", function(evt) {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', function(evt) {
+// Call Fetch Event
+self.addEventListener('fetch', evt => {
+  console.log('Service Worker: Fetching');
   // code to handle requests goes here
   evt.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.match(evt.request).then(response => {
-          return response || fetch(evt.request);
-        });
-      })
+      fetch(evt.request).catch(() => caches.match(evt.request))
     );
 });
 // Collapse
