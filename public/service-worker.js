@@ -1,14 +1,15 @@
-const CACHE_NAME = 'static-cache-v2';
-
 const FILES_TO_CACHE = [
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
     '/styles.css',
     '/index.js',
     '/manifest.webmanifest',
-    '/database.js'
+    '/db.js',
+    '/index.html',
+    '/'
 ]
 
+const CACHE_NAME = 'static-cache-v2';
 const DATA_CACHE_NAME = 'data-cache-v1';
 
 // Call install event
@@ -44,15 +45,14 @@ self.addEventListener("activate", evt => {
 });
 
 // Call Fetch Event
-self.addEventListener('fetch', evt => {
-  console.log('Service Worker: Fetching');
+self.addEventListener('fetch', function(evt) {
   // code to handle requests goes here
   evt.respondWith(
-      fetch(evt.request).catch(() => caches.match(evt.request))
-    );
-});
-// Collapse
-
-
-
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(evt.request).then(response => {
+          return response || fetch(evt.request);
+      });
+    })
+  );
+});   
 
