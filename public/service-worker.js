@@ -28,20 +28,21 @@ self.addEventListener("install", evt => {
 // Call Activate Event
 self.addEventListener("activate", evt => {
   console.log('Service Worker: Activated');
+  const currentCaches = [CACHE_NAME, DATA_CACHE_NAME]; 
   // Remove unwanted caches
   evt.waitUntil(
     caches.keys().then(keyList => {
-      return Promise.all(
-        keyList.map(key => {
-          if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
-            console.log("Removing old cache data", key);
-            return caches.delete(key);
-          }
-        })
-      );
+      return keyList.filter(keyList => !currentCaches.includes(keyList));
     })
+    .then((cachesToDelete) => {
+      return Promise.all(
+        cachesToDelete.map(cacheToDelete => {
+          return caches.delete(cacheToDelete);
+        })
+      )
+    })
+  .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Call Fetch Event
@@ -55,4 +56,14 @@ self.addEventListener('fetch', function(evt) {
     })
   );
 });   
+
+// keyList.map(key => {
+//   if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
+//     console.log("Removing old cache data", key);
+//     return caches.delete(key);
+//   }
+// })
+// );
+// })
+// );
 
